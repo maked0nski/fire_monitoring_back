@@ -1,0 +1,245 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// Модель користувача
+model User {
+  id                 Int         @id @default(autoincrement())
+  surename           String?
+  name               String?
+  fathersname        String?
+  phone              String?     @unique
+  email              String      @unique
+  birthday           String?
+  image              String?     @default("defaulAvatar.png")
+  role               Role        @default(USER)
+  position           Position?   @relation("positionTousers", fields: [positionId], references: [id])
+  positionId         Int?
+  car                Car?        @relation("carTousers")
+  fuel_card          Fuel_card[] @relation("fuel_cardTousers")
+  createdAt          DateTime    @default(now()) @db.Timestamp(6)
+  updatedAt          DateTime    @updatedAt
+  password           String
+  //    access_token String?     @db.VarChar(500)
+  refresh_token      String?     @db.VarChar(500)
+  status             StatusEnum  @default(pending) // статус користувача підтвердив почту чи ні
+  verificationCode   String?     @unique @db.VarChar(500) // код верифікації для реестрації користувача, та скидання чи відновлення паролю
+  verificationCodeAt DateTime? // строк життя токена
+
+  @@index([email])
+  @@index([positionId], map: "users_positionId_fkey")
+  @@index([verificationCodeAt])
+  @@map("users")
+}
+
+// Роль користувача
+enum Role {
+  USER
+  ADMIN
+  ROOT
+}
+
+// Статус користувача
+enum StatusEnum {
+  pending
+  active
+  blocked
+}
+
+// Модель посада
+model Position {
+  id       Int    @id @default(autoincrement())
+  position String
+  users    User[] @relation("positionTousers")
+}
+
+// Модель паливної карточки
+model Fuel_card {
+  id            Int     @id @default(autoincrement())
+  number        String
+  pin           String
+  active        Boolean @default(true)
+  station_brend String  @default("OKKO")
+  users         User?   @relation("fuel_cardTousers", fields: [userId], references: [id], map: "Fuel_card_userId_fkey")
+  userId        Int?
+
+  @@index([userId], map: "Fuel_card_userId_fkey")
+}
+
+// Модель службового автомобіля
+model Car {
+  id           Int     @id @default(autoincrement())
+  vin          String?
+  model        String
+  fuel         String
+  year         String
+  passport_car String?
+  oddometr     Int?
+  insurance    String?
+  timeLeft     Int?    @default(0)
+  users        User?   @relation("carTousers", fields: [userId], references: [id], map: "Car_userId_fkey")
+  userId       Int?    @unique(map: "Car_userId_key")
+}
+
+// Модель клієнта
+model Customer {
+  id             Int             @id @default(autoincrement())
+  name           String
+  phone          String?
+  email          String?
+  contact_person ContactPerson[]
+  buildings      Building[]
+  createdAt      DateTime        @default(now()) @db.Timestamp(6)
+  updatedAt      DateTime        @updatedAt
+  isDeleted      Boolean         @default(false)
+}
+
+// Модель будівлі (обєкту)
+model Building {
+  id                          Int                        @id @default(autoincrement())
+  name                        String?
+  address                     String?
+  description                 String?
+  coordinate                  String?
+  service_contract            String?
+  contact_person              ContactPerson[]
+  fire_alarm_systems          FireAlarm[]
+  fire_extinguishers          FireExtinguishers[]
+  fire_hydrant                FireHydrant?
+  fire_resistant_impregnation FireResistantImpregnation?
+  observation                 Observation?
+  isDeleted                   Boolean                    @default(false)
+  customer                    Customer?                  @relation(fields: [customerId], references: [id])
+  customerId                  Int?
+}
+
+// Модель контактної особи
+model ContactPerson {
+  id        Int      @id @default(autoincrement())
+  name      String?
+  phone     String?
+  position  String?
+  email     String?
+  createdAt DateTime @default(now()) @db.Timestamp(6)
+  updatedAt DateTime @updatedAt
+  isDeleted Boolean  @default(false)
+
+  customer Customer? @relation(fields: [firmId], references: [id], map: "Contact_person_customerId_fkey")
+  firmId   Int?
+
+  building   Building? @relation(fields: [buildingId], references: [id])
+  buildingId Int?
+
+  @@index([firmId], map: "Contact_person_customerId_fkey")
+}
+
+// Модель вогнегасника
+model FireExtinguishers {
+  id          Int     @id @default(autoincrement())
+  model       String
+  quantity    Int
+  reminding   Boolean @default(true)
+  next_check  String
+  who_checked String?
+  timeLeft    Int?    @default(0)
+
+  building   Building? @relation(fields: [buildingId], references: [id], map: "Fire_extinguishers_buildingId_fkey")
+  buildingId Int?
+
+  @@index([buildingId], map: "Fire_extinguishers_buildingId_fkey")
+}
+
+// Модель пожежних рукавів
+model FireHydrant {
+  id          Int     @id @default(autoincrement())
+  model       String?
+  quantity    Int
+  next_check  String
+  reminding   Boolean @default(true)
+  who_checked String?
+  timeLeft    Int?    @default(0)
+
+  building   Building? @relation(fields: [buildingId], references: [id], map: "Fire_hydrant_buildingId_fkey")
+  buildingId Int?      @unique(map: "Fire_hydrant_buildingId_fkey")
+}
+
+// Модель просочування конструкцій вогнетривкою речовиною
+model FireResistantImpregnation {
+  id                Int     @id @default(autoincrement())
+  area              Int
+  seepage_liquid    String
+  next_check        String
+  reminding         Boolean @default(true)
+  timeLeft          Int?    @default(0)
+  project_file_link String?
+  who_checked       String?
+
+  building   Building? @relation(fields: [buildingId], references: [id], map: "Fire_resistant_impregnation_buildingId_fkey")
+  buildingId Int?      @unique(map: "Fire_resistant_impregnation_buildingId_key")
+}
+
+// Модель системи пожежегасіння
+model FireAlarm {
+  id                Int          @id @default(autoincrement())
+  installation_date String?
+  project_file_link String?
+  next_check        String
+  reminding         Boolean      @default(true)
+  device_state      String
+  fire_system       FireSystem[]
+  fire_sensor       FireSensor[]
+  number_sensors    String? // К-ть датчиків
+
+  building   Building? @relation(fields: [buildingId], references: [id])
+  buildingId Int?
+}
+
+// Модель прилада пожежної сигналізації
+model FireSystem {
+  id          Int     @id @default(autoincrement())
+  name        String
+  version     String?
+  manual_link String?
+  zones       String
+  description String
+
+  FireAlarm   FireAlarm? @relation(fields: [fireAlarmId], references: [id])
+  fireAlarmId Int?
+}
+
+// Модель датчика пожежної сигналізації
+model FireSensor {
+  id          Int     @id @default(autoincrement())
+  name        String
+  description String
+  manual_link String?
+
+  fireAlarm   FireAlarm? @relation(fields: [fireAlarmId], references: [id])
+  fireAlarmId Int?
+}
+
+// Модель пожежного спостереження
+model Observation {
+  id             Int      @id @unique @default(autoincrement())
+  number         Int
+  contract       String?
+  sim_card       SimCard? @relation(fields: [sim_cardNumber], references: [number])
+  sim_cardNumber String?  @unique()
+
+  firmId   Int?      @unique(map: "Observation_firmId_key")
+  building Building? @relation(fields: [firmId], references: [id], map: "Observation_firmId_key")
+}
+
+// Модель сім карточок
+model SimCard {
+  id          Int          @id @default(autoincrement())
+  number      String       @unique(map: "SimCard_number_key")
+  operator    String       @default("kyivstar")
+  active      Boolean      @default(true)
+  observation Observation?
+}
