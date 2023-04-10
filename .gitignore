@@ -2,3 +2,4 @@
 *.env
 .idea
 /prisma/seed.ts
+/dist/
