@@ -20,7 +20,7 @@ import { ConfigService } from "@nestjs/config";
           logger: true,
         },
         // defaults: {
-        //     from: configs.NO_REPLY_EMAIL_FROM,
+        //     from: process.env.NO_REPLY_EMAIL_FROM,
         // },
         template: {
           dir: join(__dirname, "templates"),

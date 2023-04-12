@@ -2,14 +2,14 @@ import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
 import { MailerService } from "@nestjs-modules/mailer";
 
 import { UserType } from "../user/type";
-import { configs } from "../__configs";
+import * as process from "process";
 
 @Injectable()
 export class MailService {
   private readonly clientAppUrl: string;
 
   constructor(private mailerService: MailerService) {
-    this.clientAppUrl = configs.FrontEnd_APP_URL;
+    this.clientAppUrl = `process.env.FRONT_END_APP_URL`;
   }
 
   async sendUserConfirmation(
@@ -35,7 +35,7 @@ export class MailService {
     await this.mailerService
       .sendMail({
         to: user.email,
-        from: configs.NO_REPLY_EMAIL_FROM, // override default from
+        from: process.env.NO_REPLY_EMAIL_FROM, // override default from
         subject: "Вітаємо на сайті Пожежного спостереження",
         template: templates, // `.hbs` extension is appended automatically
         context: {

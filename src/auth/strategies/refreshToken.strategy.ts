@@ -4,7 +4,6 @@ import { ExtractJwt, Strategy } from "passport-jwt";
 import { Request } from "express";
 
 import { JwtPayload, JwtPayloadWithRt } from "../types";
-import { configs } from "../../__configs";
 
 @Injectable()
 export class RefreshTokenStrategy extends PassportStrategy(
@@ -14,7 +13,7 @@ export class RefreshTokenStrategy extends PassportStrategy(
   constructor() {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      secretOrKey: configs.ACCESS_TOKEN_SECRET,
+      secretOrKey: process.env.ACCESS_TOKEN_SECRET,
       passReqToCallback: true,
     });
   }

@@ -19,8 +19,6 @@ import { Exception } from "../__exceptions";
 import { hashPassword } from "../__utils";
 import { StatusEnum } from "../user/enum";
 import { UserType } from "../user/type";
-import { configs } from "../__configs";
-import * as process from "process";
 
 @Injectable()
 export class AuthService {
@@ -32,7 +30,7 @@ export class AuthService {
     private userService: UserService,
     private mailService: MailService
   ) {
-    this.clientAppUrl = configs.FrontEnd_APP_URL;
+    this.clientAppUrl = process.env.FRONT_END_APP_URL;
   }
 
   async generateToken(data, options?: SignOptions): Promise<string> {
@@ -217,13 +215,13 @@ export class AuthService {
       role: role,
     };
     const optionAT = {
-      secret: configs.ACCESS_TOKEN_SECRET,
-      expiresIn: configs.ACCESS_TOKEN_EXPIRES,
+      secret: process.env.ACCESS_TOKEN_SECRET,
+      expiresIn: process.env.ACCESS_TOKEN_EXPIRES,
       // algorithm: 'RS256',
     };
     const optionRT = {
-      secret: configs.REFRESH_TOKEN_SECRET,
-      expiresIn: configs.REFRESH_TOKEN_EXPIRES,
+      secret: process.env.REFRESH_TOKEN_SECRET,
+      expiresIn: process.env.REFRESH_TOKEN_EXPIRES,
       // algorithm: 'RS256',
     };
 

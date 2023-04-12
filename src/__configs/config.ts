@@ -1,8 +1,8 @@
-import * as process from "process";
+// import * as process from "process";
 
-export const configs = {
-  PORT: process.env.PORT || 8080,
-  FrontEnd_APP_URL: process.env.FE_APP_URL || "http://localhost:8080",
+// console.log(process.env.NONE_ENV);
+// console.log("PORT", process.env.PORT);
+const configs = {
 
   ACCESS_TOKEN_SECRET:
     process.env.ACCESS_TOKEN_SECRET || "AccessToken_SECRET_KeY",

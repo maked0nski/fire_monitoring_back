@@ -5,7 +5,6 @@ import { ValidationPipe } from "@nestjs/common";
 import { PrismaService } from "./__core/prisma.service";
 import { AccessTokenGuard } from "./__core/guards";
 import { AppModule } from "./app.module";
-import { configs } from "./__configs";
 
 const configureCors = {
   origin: "*",
@@ -24,8 +23,11 @@ const swaggerConfig = new DocumentBuilder()
   .addTag("Firefighter")
   .build();
 
+console.log("PORT : ", process.env.PORT)
+console.log("FrontEnd_APP_URL : ", process.env.FRONT_END_APP_URL)
+
 async function bootstrap() {
-  const PORT = configs.PORT;
+  const PORT = Number( process.env.PORT);
   const app = await NestFactory.create(AppModule);
   app.enableCors(configureCors);
 
